@@ -9,6 +9,7 @@ import 'screens/mood_tracker_screen.dart';
 import 'screens/breathing_screen.dart';
 import 'screens/lockdown_screen.dart';
 import 'widgets/bottom_nav.dart';
+import 'services/database_helper.dart';
 
 void main() {
   runApp(const JenApp());
@@ -45,32 +46,31 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   String currentScreen = 'home';
+  List<JournalEntry> journalEntries = [];
+  List<MoodEntry> moodHistory = [];
+  bool isLoading = true;
 
-  // Sample data for Milestone 1
-  List<JournalEntry> journalEntries = [
-    JournalEntry(
-      id: 1,
-      title: 'A peaceful morning',
-      content: 'Today I woke up feeling grateful for another day. The sunrise was beautiful and I took time to meditate.',
-      date: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    JournalEntry(
-      id: 2,
-      title: 'Reflections on growth',
-      content: 'Learning to be present in each moment has been transformative. I\'m noticing the small joys more.',
-      date: DateTime.now().subtract(const Duration(days: 4)),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
-  List<MoodEntry> moodHistory = [
-    MoodEntry(mood: 4, date: DateTime.now().subtract(const Duration(days: 6))),
-    MoodEntry(mood: 3, date: DateTime.now().subtract(const Duration(days: 5))),
-    MoodEntry(mood: 5, date: DateTime.now().subtract(const Duration(days: 4))),
-    MoodEntry(mood: 4, date: DateTime.now().subtract(const Duration(days: 3))),
-    MoodEntry(mood: 4, date: DateTime.now().subtract(const Duration(days: 2))),
-    MoodEntry(mood: 5, date: DateTime.now().subtract(const Duration(days: 1))),
-    MoodEntry(mood: 4, date: DateTime.now()),
-  ];
+  Future<void> _loadData() async {
+    final db = DatabaseHelper.instance;
+
+    // Load journal entries
+    final entries = await db.getAllJournalEntries();
+
+    // Load mood entries
+    final moods = await db.getAllMoodEntries();
+
+    setState(() {
+      journalEntries = entries;
+      moodHistory = moods;
+      isLoading = false;
+    });
+  }
 
   void setJournalEntries(List<JournalEntry> entries) {
     setState(() {

@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../models/mood_entry.dart';
+import '../services/database_helper.dart';
 
 class MoodTrackerScreen extends StatefulWidget {
   final List<MoodEntry> moodHistory;
@@ -23,7 +24,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   int? selectedMood;
   DateTime selectedDate = DateTime.now();
 
-  void _saveMood() {
+  void _saveMood() async {
     if (selectedMood == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a mood')),
@@ -36,18 +37,30 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
       date: selectedDate,
     );
 
+    // Save to database
+    final db = DatabaseHelper.instance;
+    final id = await db.createMoodEntry(newEntry);
+
+    final savedEntry = MoodEntry(
+      id: id,
+      mood: newEntry.mood,
+      date: newEntry.date,
+    );
+
     setState(() {
-      widget.moodHistory.add(newEntry);
+      widget.moodHistory.add(savedEntry);
       widget.setMoodHistory(widget.moodHistory);
       selectedMood = null;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Mood logged successfully'),
-        duration: Duration(seconds: 1),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mood logged successfully'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
   List<MoodEntry> _getLastWeekMoods() {

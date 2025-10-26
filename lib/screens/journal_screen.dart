@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../models/journal_entry.dart';
+import '../services/database_helper.dart';
 
 class JournalScreen extends StatefulWidget {
   final List<JournalEntry> entries;
@@ -25,32 +26,55 @@ class _JournalScreenState extends State<JournalScreen> {
       MaterialPageRoute(
         builder: (context) => JournalEditorScreen(
           entry: entry,
-          onSave: (updatedEntry) {
-            setState(() {
-              if (index != null) {
+          onSave: (updatedEntry) async {
+            final db = DatabaseHelper.instance;
+
+            if (index != null) {
+              // Update existing entry
+              await db.updateJournalEntry(updatedEntry);
+              setState(() {
                 widget.entries[index] = updatedEntry;
-              } else {
-                widget.entries.insert(0, updatedEntry);
-              }
-              widget.setEntries(widget.entries);
-            });
+                widget.setEntries(widget.entries);
+              });
+            } else {
+              // Create new entry
+              final id = await db.createJournalEntry(updatedEntry);
+              final newEntry = JournalEntry(
+                id: id,
+                title: updatedEntry.title,
+                content: updatedEntry.content,
+                date: updatedEntry.date,
+              );
+              setState(() {
+                widget.entries.insert(0, newEntry);
+                widget.setEntries(widget.entries);
+              });
+            }
           },
         ),
       ),
     );
   }
 
-  void _deleteEntry(int index) {
+  void _deleteEntry(int index) async {
+    final entry = widget.entries[index];
+    if (entry.id != null) {
+      await DatabaseHelper.instance.deleteJournalEntry(entry.id!);
+    }
+
     setState(() {
       widget.entries.removeAt(index);
       widget.setEntries(widget.entries);
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Entry deleted'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Entry deleted'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override

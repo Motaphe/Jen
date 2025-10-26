@@ -1,11 +1,111 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../services/preferences_helper.dart';
 
 class HomeScreen extends StatelessWidget {
+  final String? userName;
   final Function(String) onNavigate;
+  final Function(String?) onUpdateName;
 
-  const HomeScreen({super.key, required this.onNavigate});
+  const HomeScreen({
+    super.key,
+    required this.userName,
+    required this.onNavigate,
+    required this.onUpdateName,
+  });
+
+  Future<void> _showEditNameDialog(BuildContext context) async {
+    final nameController = TextEditingController(text: userName ?? '');
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          'Edit Name',
+          style: TextStyle(
+            color: AppColors.text,
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: nameController,
+              autofocus: true,
+              style: const TextStyle(color: AppColors.text),
+              decoration: InputDecoration(
+                hintText: 'Enter your name',
+                hintStyle: const TextStyle(color: AppColors.overlay0),
+                filled: true,
+                fillColor: AppColors.base,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              textCapitalization: TextCapitalization.words,
+              onSubmitted: (value) {
+                Navigator.pop(context, value.trim());
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.overlay1),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final name = nameController.text.trim();
+              Navigator.pop(context, name.isEmpty ? null : name);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.lavender,
+              foregroundColor: AppColors.base,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      HapticFeedback.lightImpact();
+      if (result.isEmpty) {
+        await PreferencesHelper.setUserName('');
+        onUpdateName(null);
+      } else {
+        await PreferencesHelper.setUserName(result);
+        onUpdateName(result);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +123,24 @@ class HomeScreen extends StatelessWidget {
                 style: AppTextStyles.bodySecondary,
               ),
               const SizedBox(height: 8),
-              Text(
-                'Jen',
-                style: AppTextStyles.heading1,
+              GestureDetector(
+                onTap: () => _showEditNameDialog(context),
+                child: Row(
+                  children: [
+                    Text(
+                      userName ?? 'Jen',
+                      style: AppTextStyles.heading1,
+                    ),
+                    if (userName != null) ...[
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.edit,
+                        size: 20,
+                        color: AppColors.overlay1,
+                      ),
+                    ],
+                  ],
+                ),
               ),
               const SizedBox(height: 32),
               Expanded(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../services/database_helper.dart';
 
 class AffirmationsScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -90,14 +91,20 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {
-                      // Save functionality will be added in Milestone 2
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Saved to favorites'),
-                          duration: Duration(seconds: 1),
-                        ),
+                    onPressed: () async {
+                      final db = DatabaseHelper.instance;
+                      await db.saveFavoriteAffirmation(
+                        affirmations[currentIndex],
                       );
+
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Saved to favorites'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      }
                     },
                     icon: const Icon(Icons.favorite_border),
                     label: const Text('Save'),

@@ -38,6 +38,8 @@ class _BreathingScreenState extends State<BreathingScreen>
     );
 
     _animationController.addStatusListener((status) {
+      if (!_isRunning) return; // Don't update if not running
+
       if (status == AnimationStatus.completed) {
         setState(() {
           _breathPhase = 'Exhale';

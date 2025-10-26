@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../services/database_helper.dart';
@@ -14,6 +15,7 @@ class AffirmationsScreen extends StatefulWidget {
 
 class _AffirmationsScreenState extends State<AffirmationsScreen> {
   int currentIndex = 0;
+  bool _isSaving = false;
 
   final List<String> affirmations = [
     "I am capable of achieving great things.",
@@ -90,34 +92,52 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final messenger = ScaffoldMessenger.of(context);
-                      final db = DatabaseHelper.instance;
-                      await db.saveFavoriteAffirmation(
-                        affirmations[currentIndex],
-                      );
+                  AnimatedScale(
+                    scale: _isSaving ? 0.95 : 1.0,
+                    duration: const Duration(milliseconds: 100),
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        // Immediate haptic feedback
+                        HapticFeedback.mediumImpact();
 
-                      if (mounted) {
-                        messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Saved to favorites'),
-                            duration: Duration(seconds: 1),
-                          ),
+                        // Visual feedback
+                        setState(() {
+                          _isSaving = true;
+                        });
+
+                        final messenger = ScaffoldMessenger.of(context);
+                        final db = DatabaseHelper.instance;
+                        await db.saveFavoriteAffirmation(
+                          affirmations[currentIndex],
                         );
-                      }
-                    },
-                    icon: const Icon(Icons.favorite_border),
-                    label: const Text('Save'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.surface1,
-                      foregroundColor: AppColors.text,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+
+                        // Reset animation state
+                        setState(() {
+                          _isSaving = false;
+                        });
+
+                        if (mounted) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: const Text('Saved to favorites'),
+                              duration: const Duration(seconds: 1),
+                              backgroundColor: AppColors.green,
+                            ),
+                          );
+                        }
+                      },
+                      icon: Icon(_isSaving ? Icons.favorite : Icons.favorite_border),
+                      label: const Text('Save'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isSaving ? AppColors.green : AppColors.surface1,
+                        foregroundColor: _isSaving ? AppColors.base : AppColors.text,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),

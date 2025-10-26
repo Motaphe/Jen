@@ -53,4 +53,4 @@ flutter run
 
 ## Project Management
 
-Development progress and task tracking are managed through [GitHub Projects](https://github.com/Motaphe/Jen/projects).
+Development progress and task tracking are managed through [GitHub Projects](https://github.com/users/Motaphe/projects/2).

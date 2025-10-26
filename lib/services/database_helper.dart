@@ -129,13 +129,22 @@ class DatabaseHelper {
     });
   }
 
-  Future<List<String>> getFavoriteAffirmations() async {
+  Future<List<Map<String, dynamic>>> getFavoriteAffirmations() async {
     final db = await database;
     final result = await db.query(
       'favorite_affirmations',
       orderBy: 'saved_at DESC',
     );
-    return result.map((map) => map['text'] as String).toList();
+    return result;
+  }
+
+  Future<int> deleteFavoriteAffirmation(int id) async {
+    final db = await database;
+    return await db.delete(
+      'favorite_affirmations',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<void> close() async {

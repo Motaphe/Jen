@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../services/database_helper.dart';
+import 'favorites_screen.dart';
 
 class AffirmationsScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -51,6 +52,23 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
           'Daily Affirmations',
           style: AppTextStyles.heading3,
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite, color: AppColors.red),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FavoritesScreen(
+                    onBack: () => Navigator.pop(context),
+                  ),
+                ),
+              );
+            },
+            tooltip: 'View Favorites',
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(

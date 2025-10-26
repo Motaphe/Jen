@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../services/database_helper.dart';
@@ -29,6 +30,36 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
     "I am grateful for this moment.",
     "I have the power to create change.",
     "I am enough, just as I am.",
+    "Every breath I take fills me with peace.",
+    "I am growing and evolving each day.",
+    "My potential is limitless.",
+    "I choose to see the good in every situation.",
+    "I am in control of my thoughts and emotions.",
+    "I deserve rest and relaxation.",
+    "My inner peace is my superpower.",
+    "I am resilient and can handle challenges.",
+    "I radiate positive energy.",
+    "I am exactly where I need to be.",
+    "My past does not define my future.",
+    "I celebrate my progress, no matter how small.",
+    "I am surrounded by abundance.",
+    "I choose to focus on what I can control.",
+    "My mind is a garden; I choose what to plant.",
+    "I am patient with myself and my journey.",
+    "I trust the timing of my life.",
+    "I am worthy of my dreams and goals.",
+    "I release what no longer serves me.",
+    "I am creating the life I desire.",
+    "My mistakes are opportunities to learn.",
+    "I am confident in my abilities.",
+    "I choose joy and gratitude today.",
+    "I am at peace with who I am becoming.",
+    "My presence makes a difference.",
+    "I am open to new possibilities.",
+    "I trust myself to make good decisions.",
+    "I am deserving of compassion and kindness.",
+    "I find balance in all areas of my life.",
+    "I am the author of my own story.",
   ];
 
   void nextAffirmation() {
@@ -93,8 +124,12 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                     const SizedBox(height: 32),
                     Text(
                       affirmations[currentIndex],
-                      style: AppTextStyles.heading2.copyWith(
-                        height: 1.4,
+                      style: GoogleFonts.merriweather(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.text,
+                        height: 1.5,
+                        fontStyle: FontStyle.italic,
                       ),
                       textAlign: TextAlign.center,
                     ),

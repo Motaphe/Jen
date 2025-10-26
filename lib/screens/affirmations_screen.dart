@@ -92,13 +92,14 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                 children: [
                   ElevatedButton.icon(
                     onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
                       final db = DatabaseHelper.instance;
                       await db.saveFavoriteAffirmation(
                         affirmations[currentIndex],
                       );
 
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           const SnackBar(
                             content: Text('Saved to favorites'),
                             duration: Duration(seconds: 1),

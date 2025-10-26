@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../services/preferences_helper.dart';
+import '../providers/theme_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   final String? userName;
@@ -109,14 +111,35 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: AppColors.base,
+      backgroundColor: isDark ? AppColors.base : AppColors.latteBase,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 40), // Spacer for alignment
+                  Expanded(child: Container()), // Takes up remaining space
+                  IconButton(
+                    icon: Icon(
+                      isDark ? Icons.light_mode : Icons.dark_mode,
+                      color: isDark ? AppColors.text : AppColors.latteText,
+                    ),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      themeProvider.toggleTheme();
+                    },
+                    tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               Text(
                 'Welcome back',

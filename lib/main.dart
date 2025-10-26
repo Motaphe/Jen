@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'constants/app_theme.dart';
 import 'constants/colors.dart';
 import 'models/journal_entry.dart';
 import 'models/mood_entry.dart';
@@ -11,9 +13,15 @@ import 'screens/lockdown_screen.dart';
 import 'widgets/bottom_nav.dart';
 import 'services/database_helper.dart';
 import 'services/preferences_helper.dart';
+import 'providers/theme_provider.dart';
 
 void main() {
-  runApp(const JenApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const JenApp(),
+    ),
+  );
 }
 
 class JenApp extends StatelessWidget {
@@ -21,19 +29,17 @@ class JenApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Jen',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.base,
-        colorScheme: ColorScheme.dark(
-          primary: AppColors.lavender,
-          surface: AppColors.surface0,
-          error: AppColors.red,
-        ),
-        useMaterial3: true,
-      ),
-      home: const MainApp(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Jen',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const MainApp(),
+        );
+      },
     );
   }
 }

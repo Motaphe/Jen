@@ -10,6 +10,8 @@ import 'screens/journal_screen.dart';
 import 'screens/mood_tracker_screen.dart';
 import 'screens/breathing_screen.dart';
 import 'screens/lockdown_screen.dart';
+import 'screens/water_reminder_screen.dart';
+import 'screens/calendar_screen.dart';
 import 'widgets/bottom_nav.dart';
 import 'services/database_helper.dart';
 import 'services/preferences_helper.dart';
@@ -252,6 +254,18 @@ class _MainAppState extends State<MainApp> {
         );
       case 'breathing':
         return BreathingScreen(onBack: () {
+          setState(() {
+            currentScreen = 'home';
+          });
+        });
+      case 'water':
+        return WaterReminderScreen(onBack: () {
+          setState(() {
+            currentScreen = 'home';
+          });
+        });
+      case 'calendar':
+        return CalendarScreen(onBack: () {
           setState(() {
             currentScreen = 'home';
           });

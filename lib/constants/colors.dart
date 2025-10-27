@@ -23,21 +23,21 @@ class AppColors {
   static const Color subtext1 = Color(0xFFbac2de);
 
   // Light theme - Catppuccin Latte colors
-  static const Color latteBase = Color(0xFFeff1f5);
-  static const Color latteMantle = Color(0xFFe6e9ef);
-  static const Color latteCrust = Color(0xFFdce0e8);
+  static const Color latteBase = Color(0xFFF7F9FE);
+  static const Color latteMantle = Color(0xFFF0F3FA);
+  static const Color latteCrust = Color(0xFFE7EBF6);
 
-  static const Color latteSurface0 = Color(0xFFccd0da);
-  static const Color latteSurface1 = Color(0xFFbcc0cc);
-  static const Color latteSurface2 = Color(0xFFacb0be);
+  static const Color latteSurface0 = Color(0xFFFFFFFF);
+  static const Color latteSurface1 = Color(0xFFF2F5FC);
+  static const Color latteSurface2 = Color(0xFFE8ECF8);
 
-  static const Color latteOverlay0 = Color(0xFF9ca0b0);
-  static const Color latteOverlay1 = Color(0xFF8c8fa1);
-  static const Color latteOverlay2 = Color(0xFF7c7f93);
+  static const Color latteOverlay0 = Color(0xFF868AA6);
+  static const Color latteOverlay1 = Color(0xFF6F7394);
+  static const Color latteOverlay2 = Color(0xFF595E85);
 
-  static const Color latteText = Color(0xFF4c4f69);
-  static const Color latteSubtext0 = Color(0xFF6c6f85);
-  static const Color latteSubtext1 = Color(0xFF5c5f77);
+  static const Color latteText = Color(0xFF252A48);
+  static const Color latteSubtext0 = Color(0xFF41476A);
+  static const Color latteSubtext1 = Color(0xFF3A4061);
 
   // Accent colors
   static const Color lavender = Color(0xFFb4befe);

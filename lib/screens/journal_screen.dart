@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../constants/colors.dart';
+import '../constants/app_theme.dart';
 import '../constants/text_styles.dart';
 import '../models/journal_entry.dart';
 import '../services/database_helper.dart';
@@ -79,14 +80,21 @@ class _JournalScreenState extends State<JournalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final backgroundColor = isDark ? AppColors.base : AppColors.latteBase;
+    final textColor = isDark ? AppColors.text : AppColors.latteText;
+    final subtextColor = isDark ? AppColors.subtext0 : AppColors.latteSubtext0;
+    final overlayColor = isDark ? AppColors.overlay0 : AppColors.latteOverlay0;
+
     return Scaffold(
-      backgroundColor: AppColors.base,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.base,
+        backgroundColor: backgroundColor,
         elevation: 0,
         title: Text(
           'Journal',
-          style: AppTextStyles.heading3,
+          style: AppTextStyles.heading3.copyWith(color: textColor),
         ),
       ),
       body: widget.entries.isEmpty
@@ -97,17 +105,17 @@ class _JournalScreenState extends State<JournalScreen> {
                   Icon(
                     Icons.book_outlined,
                     size: 64,
-                    color: AppColors.overlay0,
+                    color: overlayColor,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'No journal entries yet',
-                    style: AppTextStyles.bodySecondary,
+                    style: AppTextStyles.bodySecondary.copyWith(color: subtextColor),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Tap + to create your first entry',
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(color: overlayColor),
                   ),
                 ],
               ),
@@ -129,6 +137,13 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   Widget _buildEntryCard(JournalEntry entry, int index) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppColors.surface0 : AppColors.latteSurface1;
+    final borderColor = isDark ? Colors.transparent : AppColors.latteSurface2;
+    final textColor = isDark ? AppColors.text : AppColors.latteText;
+    final captionColor = isDark ? AppColors.subtext0 : AppColors.latteSubtext0;
+
     return Dismissible(
       key: Key(entry.id?.toString() ?? entry.date.toString()),
       direction: DismissDirection.endToStart,
@@ -143,7 +158,7 @@ class _JournalScreenState extends State<JournalScreen> {
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(
           Icons.delete,
-          color: AppColors.text,
+          color: AppColors.base,
         ),
       ),
       child: GestureDetector(
@@ -152,8 +167,18 @@ class _JournalScreenState extends State<JournalScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface0,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor.withValues(alpha: isDark ? 0 : 0.9)),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.18)
+                    : AppColors.latteOverlay0.withValues(alpha: 0.16),
+                blurRadius: 18,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,21 +189,21 @@ class _JournalScreenState extends State<JournalScreen> {
                   Expanded(
                     child: Text(
                       entry.title,
-                      style: AppTextStyles.heading3,
+                      style: AppTextStyles.heading3.copyWith(color: textColor),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Text(
                     DateFormat('MMM d, y').format(entry.date),
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(color: captionColor),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
                 entry.content,
-                style: AppTextStyles.bodySecondary,
+                style: AppTextStyles.bodySecondary.copyWith(color: captionColor),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -252,17 +277,28 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
   }
 
   Future<void> _selectDate() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
       builder: (context, child) {
+        final base = Theme.of(context);
+        final scheme = isDark
+            ? const ColorScheme.dark(
+                primary: AppColors.blue,
+                surface: AppColors.surface0,
+              )
+            : const ColorScheme.light(
+                primary: AppColors.blue,
+                surface: AppColors.latteSurface1,
+              );
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.blue,
-              surface: AppColors.surface0,
+          data: base.copyWith(
+            colorScheme: scheme,
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: AppColors.blue),
             ),
           ),
           child: child!,
@@ -279,18 +315,25 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = context.backgroundColor;
+    final surfaceColor = context.surfaceColor;
+    final surface1 = context.surface1Color;
+    final textColor = context.textColor;
+    final overlayColor = context.overlayColor;
+
     return Scaffold(
-      backgroundColor: AppColors.base,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.base,
+        backgroundColor: backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.text),
+          icon: Icon(Icons.close, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           widget.entry == null ? 'New Entry' : 'Edit Entry',
-          style: AppTextStyles.heading3,
+          style: AppTextStyles.heading3.copyWith(color: textColor),
         ),
         actions: [
           TextButton(
@@ -315,12 +358,26 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface0,
+                  color: surfaceColor,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.transparent
+                        : surface1.withValues(alpha: 0.9),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.2)
+                          : AppColors.latteOverlay0.withValues(alpha: 0.16),
+                      blurRadius: 16,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_today,
                       color: AppColors.blue,
                       size: 20,
@@ -328,7 +385,7 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
                     const SizedBox(width: 12),
                     Text(
                       DateFormat('EEEE, MMMM d, y').format(_selectedDate),
-                      style: AppTextStyles.body,
+                      style: AppTextStyles.body.copyWith(color: textColor),
                     ),
                   ],
                 ),
@@ -337,11 +394,11 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
             const SizedBox(height: 24),
             TextField(
               controller: _titleController,
-              style: AppTextStyles.heading2,
+              style: AppTextStyles.heading2.copyWith(color: textColor),
               decoration: InputDecoration(
                 hintText: 'Entry title',
                 hintStyle: AppTextStyles.heading2.copyWith(
-                  color: AppColors.overlay0,
+                  color: overlayColor,
                 ),
                 border: InputBorder.none,
               ),
@@ -349,13 +406,13 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: _contentController,
-              style: AppTextStyles.body,
+              style: AppTextStyles.body.copyWith(color: textColor),
               maxLines: null,
               minLines: 10,
               decoration: InputDecoration(
                 hintText: 'Write your thoughts here...',
                 hintStyle: AppTextStyles.body.copyWith(
-                  color: AppColors.overlay0,
+                  color: overlayColor,
                 ),
                 border: InputBorder.none,
               ),

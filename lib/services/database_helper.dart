@@ -3,6 +3,8 @@ import 'package:path/path.dart';
 import '../models/journal_entry.dart';
 import '../models/mood_entry.dart';
 import '../models/lockdown_entry.dart';
+import '../models/water_entry.dart';
+import '../models/breathing_entry.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -22,7 +24,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -68,6 +70,25 @@ class DatabaseHelper {
         task_name TEXT
       )
     ''');
+
+    // Water reminders table
+    await db.execute('''
+      CREATE TABLE water_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT NOT NULL,
+        confirmed INTEGER NOT NULL
+      )
+    ''');
+
+    // Breathing exercise sessions table
+    await db.execute('''
+      CREATE TABLE breathing_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        start_time TEXT NOT NULL,
+        duration_seconds INTEGER NOT NULL,
+        completed INTEGER NOT NULL
+      )
+    ''');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -79,6 +100,23 @@ class DatabaseHelper {
           duration_minutes INTEGER NOT NULL,
           completed INTEGER NOT NULL,
           task_name TEXT
+        )
+      ''');
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE water_entries (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          timestamp TEXT NOT NULL,
+          confirmed INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE breathing_entries (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          start_time TEXT NOT NULL,
+          duration_seconds INTEGER NOT NULL,
+          completed INTEGER NOT NULL
         )
       ''');
     }
@@ -174,6 +212,26 @@ class DatabaseHelper {
     );
   }
 
+  Future<bool> isAffirmationLiked(String text) async {
+    final db = await database;
+    final result = await db.query(
+      'favorite_affirmations',
+      where: 'text = ?',
+      whereArgs: [text],
+      limit: 1,
+    );
+    return result.isNotEmpty;
+  }
+
+  Future<int> unlikeAffirmation(String text) async {
+    final db = await database;
+    return await db.delete(
+      'favorite_affirmations',
+      where: 'text = ?',
+      whereArgs: [text],
+    );
+  }
+
   // Lockdown entries operations
   Future<int> createLockdownEntry(LockdownEntry entry) async {
     final db = await database;
@@ -206,6 +264,50 @@ class DatabaseHelper {
       'totalFocusMinutes': totalFocusMinutes,
       'completionRate': completionRate,
     };
+  }
+
+  // Water entries operations
+  Future<int> createWaterEntry(WaterEntry entry) async {
+    final db = await database;
+    return await db.insert('water_entries', entry.toMap());
+  }
+
+  Future<List<WaterEntry>> getAllWaterEntries() async {
+    final db = await database;
+    final result = await db.query(
+      'water_entries',
+      orderBy: 'timestamp DESC',
+    );
+    return result.map((map) => WaterEntry.fromMap(map)).toList();
+  }
+
+  Future<List<WaterEntry>> getWaterEntriesForDate(DateTime date) async {
+    final db = await database;
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+    final result = await db.query(
+      'water_entries',
+      where: 'timestamp >= ? AND timestamp <= ?',
+      whereArgs: [startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+      orderBy: 'timestamp DESC',
+    );
+    return result.map((map) => WaterEntry.fromMap(map)).toList();
+  }
+
+  // Breathing entries operations
+  Future<int> createBreathingEntry(BreathingEntry entry) async {
+    final db = await database;
+    return await db.insert('breathing_entries', entry.toMap());
+  }
+
+  Future<List<BreathingEntry>> getAllBreathingEntries() async {
+    final db = await database;
+    final result = await db.query(
+      'breathing_entries',
+      orderBy: 'start_time DESC',
+    );
+    return result.map((map) => BreathingEntry.fromMap(map)).toList();
   }
 
   Future<void> close() async {

@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Manages user preferences using SharedPreferences for persistent storage.
+/// Handles first-launch detection, theme mode, notifications, and user name.
 class PreferencesHelper {
   static const String _keyFirstLaunch = 'first_launch';
   static const String _keyThemeMode = 'theme_mode';

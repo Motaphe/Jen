@@ -6,6 +6,8 @@ import '../constants/text_styles.dart';
 import '../services/database_helper.dart';
 import '../models/breathing_entry.dart';
 
+/// Guided breathing exercise screen with audio cues and visual animations.
+/// Runs 60-second sessions using 4-4-4 breathing pattern (inhale-hold-exhale).
 class BreathingScreen extends StatefulWidget {
   final VoidCallback onBack;
 
@@ -24,11 +26,12 @@ class _BreathingScreenState extends State<BreathingScreen>
   bool _isRunning = false;
   bool _sessionCompletedNaturally = false;
   int _secondsRemaining = 0;
-  final int _totalSeconds = 60; // 1 minute
+  final int _totalSeconds = 60; // 1 minute session
   String _breathPhase = 'Tap to start';
   DateTime? _startTime;
-  Completer<void>? _cancelSignal;
+  Completer<void>? _cancelSignal; // For canceling async breathing flow
 
+  // Breathing timing constants (4-4-4 pattern)
   static const Duration _introPause = Duration(seconds: 3);
   static const Duration _inhaleDuration = Duration(seconds: 4);
   static const Duration _holdDuration = Duration(seconds: 4);
@@ -101,6 +104,8 @@ class _BreathingScreenState extends State<BreathingScreen>
     await _handleSessionEnd(completed: false);
   }
 
+  /// Orchestrates full breathing session: intro + inhale/hold/exhale cycles.
+  /// Loops until 60 seconds elapsed or user cancels via _cancelSignal.
   Future<void> _runBreathingFlow() async {
     await _playIntro();
     if (!_shouldContinue) {

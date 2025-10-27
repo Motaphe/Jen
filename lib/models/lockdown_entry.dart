@@ -1,3 +1,5 @@
+/// Represents a focused work session with optional lofi background music.
+/// Timer-based feature for deep work with optional task labeling.
 class LockdownEntry {
   final int? id;
   final DateTime startTime;
@@ -13,6 +15,8 @@ class LockdownEntry {
     this.taskName,
   });
 
+  /// Converts entry to map for SQLite storage.
+  /// Boolean stored as integer (0/1) due to SQLite limitations.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -23,6 +27,7 @@ class LockdownEntry {
     };
   }
 
+  /// Creates entry from SQLite query result.
   factory LockdownEntry.fromMap(Map<String, dynamic> map) {
     return LockdownEntry(
       id: map['id'] as int?,

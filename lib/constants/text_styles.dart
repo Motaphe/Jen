@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'colors.dart';
 
+/// Reusable text style definitions for consistent typography across the app.
+/// Uses dark theme colors; override with .copyWith() for light theme variants.
 class AppTextStyles {
   // Headings
   static const TextStyle heading1 = TextStyle(

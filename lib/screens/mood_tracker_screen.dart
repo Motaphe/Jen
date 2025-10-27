@@ -7,6 +7,8 @@ import '../constants/text_styles.dart';
 import '../models/mood_entry.dart';
 import '../services/database_helper.dart';
 
+/// Mood tracking screen with 1-5 rating scale and line chart visualization.
+/// Displays 7-day mood trends using FL Chart library.
 class MoodTrackerScreen extends StatefulWidget {
   final List<MoodEntry> moodHistory;
   final Function(List<MoodEntry>) setMoodHistory;

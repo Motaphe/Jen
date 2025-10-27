@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// Bottom navigation bar for primary app navigation (Home, Journal, Mood).
+/// Uses theme-aware styling with active/inactive state indication.
 class BottomNav extends StatelessWidget {
   final String currentScreen;
   final Function(String) onNavigate;

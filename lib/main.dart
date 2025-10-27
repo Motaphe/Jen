@@ -17,6 +17,7 @@ import 'services/database_helper.dart';
 import 'services/preferences_helper.dart';
 import 'providers/theme_provider.dart';
 
+/// Entry point for Jen mindfulness app. Sets up ThemeProvider for state management.
 void main() {
   runApp(
     ChangeNotifierProvider(
@@ -26,6 +27,7 @@ void main() {
   );
 }
 
+/// Root app widget that configures Material app with theme support.
 class JenApp extends StatelessWidget {
   const JenApp({super.key});
 
@@ -46,6 +48,8 @@ class JenApp extends StatelessWidget {
   }
 }
 
+/// Main app screen that handles navigation and state for all features.
+/// Manages string-based screen routing and displays welcome dialog on first launch.
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
@@ -54,7 +58,7 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  String currentScreen = 'home';
+  String currentScreen = 'home'; // Screen routing key
   List<JournalEntry> journalEntries = [];
   List<MoodEntry> moodHistory = [];
   bool isLoading = true;
@@ -66,19 +70,13 @@ class _MainAppState extends State<MainApp> {
     _loadData();
   }
 
+  /// Loads initial data and triggers first-launch welcome flow if needed.
   Future<void> _loadData() async {
     final db = DatabaseHelper.instance;
 
-    // Load journal entries
     final entries = await db.getAllJournalEntries();
-
-    // Load mood entries
     final moods = await db.getAllMoodEntries();
-
-    // Check if first launch
     final isFirstLaunch = await PreferencesHelper.isFirstLaunch();
-
-    // Get user name if exists
     final name = await PreferencesHelper.getUserName();
 
     setState(() {
@@ -88,7 +86,7 @@ class _MainAppState extends State<MainApp> {
       isLoading = false;
     });
 
-    // Show welcome dialog if first launch
+    // Show welcome dialog on first launch to capture user name
     if (isFirstLaunch && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showWelcomeDialog();
@@ -96,6 +94,7 @@ class _MainAppState extends State<MainApp> {
     }
   }
 
+  /// Displays welcome dialog for first-time users to enter their name.
   Future<void> _showWelcomeDialog() async {
     final nameController = TextEditingController();
 

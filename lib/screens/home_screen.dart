@@ -6,6 +6,8 @@ import '../constants/text_styles.dart';
 import '../services/preferences_helper.dart';
 import '../providers/theme_provider.dart';
 
+/// Dashboard screen displaying personalized greeting and feature navigation cards.
+/// Includes theme toggle and name editing functionality.
 class HomeScreen extends StatelessWidget {
   final String? userName;
   final Function(String) onNavigate;

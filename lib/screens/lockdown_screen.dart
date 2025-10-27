@@ -7,6 +7,8 @@ import '../services/database_helper.dart';
 import '../models/lockdown_entry.dart';
 import 'lockdown_history_screen.dart';
 
+/// Focus timer with optional lofi music background for deep work sessions.
+/// Supports 5/15/30/60-minute timers with shuffled audio playback.
 class LockdownScreen extends StatefulWidget {
   final VoidCallback onBack;
 
@@ -28,8 +30,8 @@ class _LockdownScreenState extends State<LockdownScreen> {
   bool _lofiEnabled = false;
   bool _isPlayingMusic = false;
   int _currentTrackIndex = 0;
-  List<String> _shuffledTracks = [];
-  String? _lastTrack;
+  List<String> _shuffledTracks = []; // Shuffled lofi track order
+  String? _lastTrack; // Track repeat prevention
 
   final List<int> _timeOptions = [5, 15, 30, 60];
   final List<String> _lofiTracks = List.generate(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
+/// Material 3 theme definitions using Catppuccin color palette.
+/// Provides dark (Mocha) and light (Latte) theme variants with Nunito font.
 class AppTheme {
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
@@ -108,7 +110,8 @@ class AppTheme {
   );
 }
 
-// Extension to get theme-aware colors
+/// Extension for accessing theme-aware colors based on current brightness.
+/// Automatically selects Mocha (dark) or Latte (light) palette variants.
 extension ThemeAwareColors on BuildContext {
   Color get backgroundColor => Theme.of(this).brightness == Brightness.dark
       ? AppColors.base

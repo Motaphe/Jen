@@ -7,6 +7,8 @@ import '../constants/text_styles.dart';
 import '../services/database_helper.dart';
 import 'favorites_screen.dart';
 
+/// Daily affirmations screen with random quote selection and favorites system.
+/// Displays motivational quotes with haptic feedback and like/unlike functionality.
 class AffirmationsScreen extends StatefulWidget {
   final VoidCallback onBack;
 

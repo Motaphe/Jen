@@ -6,6 +6,8 @@ import '../constants/text_styles.dart';
 import '../models/journal_entry.dart';
 import '../services/database_helper.dart';
 
+/// Journal screen displaying entry list with date filtering and edit/delete actions.
+/// Supports creating new entries and navigating to editor screen.
 class JournalScreen extends StatefulWidget {
   final List<JournalEntry> entries;
   final Function(List<JournalEntry>) setEntries;

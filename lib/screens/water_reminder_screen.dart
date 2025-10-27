@@ -6,6 +6,8 @@ import '../constants/text_styles.dart';
 import '../services/database_helper.dart';
 import '../models/water_entry.dart';
 
+/// Water intake tracker with 8-glass daily goal and periodic reminders.
+/// Uses timer to prompt hydration with haptic feedback.
 class WaterReminderScreen extends StatefulWidget {
   final VoidCallback onBack;
 
@@ -19,7 +21,7 @@ class _WaterReminderScreenState extends State<WaterReminderScreen> {
   Timer? _reminderTimer;
   List<WaterEntry> _todayEntries = [];
   bool _isLoading = true;
-  final int _targetGlasses = 8;
+  final int _targetGlasses = 8; // Daily hydration goal
 
   @override
   void initState() {

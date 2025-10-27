@@ -6,12 +6,15 @@ import '../models/lockdown_entry.dart';
 import '../models/water_entry.dart';
 import '../models/breathing_entry.dart';
 
+/// Singleton SQLite database manager for all app data persistence.
+/// Handles schema creation, migrations, and CRUD operations for all models.
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
 
   DatabaseHelper._init();
 
+  /// Lazy initialization of database connection.
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB('jen.db');
@@ -91,6 +94,9 @@ class DatabaseHelper {
     ''');
   }
 
+  /// Handles database version upgrades for backward compatibility.
+  /// v1->v2: Added lockdown_entries table
+  /// v2->v3: Added water_entries and breathing_entries tables
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('''
@@ -171,6 +177,7 @@ class DatabaseHelper {
     return result.map((map) => MoodEntry.fromMap(map)).toList();
   }
 
+  /// Retrieves mood entries within date range for chart visualization.
   Future<List<MoodEntry>> getMoodEntriesInRange(
     DateTime start,
     DateTime end,
@@ -247,6 +254,7 @@ class DatabaseHelper {
     return result.map((map) => LockdownEntry.fromMap(map)).toList();
   }
 
+  /// Computes aggregate statistics for lockdown session history display.
   Future<Map<String, dynamic>> getLockdownStats() async {
     final entries = await getAllLockdownEntries();
 
@@ -281,6 +289,7 @@ class DatabaseHelper {
     return result.map((map) => WaterEntry.fromMap(map)).toList();
   }
 
+  /// Retrieves water intake entries for specific date (daily goal tracking).
   Future<List<WaterEntry>> getWaterEntriesForDate(DateTime date) async {
     final db = await database;
     final startOfDay = DateTime(date.year, date.month, date.day);

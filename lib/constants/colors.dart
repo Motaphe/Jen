@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-// Catppuccin Mocha Theme Colors (Dark)
+/// Catppuccin color palette: Mocha (dark) and Latte (light) variants.
+/// Includes semantic colors for mood tracking (green=happy, red=sad).
 class AppColors {
   // Dark theme - Base colors
   static const Color base = Color(0xFF1e1e2e);

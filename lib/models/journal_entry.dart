@@ -1,3 +1,5 @@
+/// Represents a journal entry for user reflections and thoughts.
+/// Stored in SQLite and displayed in the journal screen with date filtering.
 class JournalEntry {
   final int? id;
   final String title;
@@ -11,6 +13,7 @@ class JournalEntry {
     required this.date,
   });
 
+  /// Converts entry to map for SQLite storage.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -20,6 +23,7 @@ class JournalEntry {
     };
   }
 
+  /// Creates entry from SQLite query result.
   factory JournalEntry.fromMap(Map<String, dynamic> map) {
     return JournalEntry(
       id: map['id'],

@@ -1,3 +1,5 @@
+/// Represents a breathing exercise session record.
+/// Tracks 60-second guided breathing cycles (inhale/hold/exhale).
 class BreathingEntry {
   final int? id;
   final DateTime startTime;
@@ -11,6 +13,8 @@ class BreathingEntry {
     required this.completed,
   });
 
+  /// Converts entry to map for SQLite storage.
+  /// Boolean stored as integer (0/1) due to SQLite limitations.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -20,6 +24,7 @@ class BreathingEntry {
     };
   }
 
+  /// Creates entry from SQLite query result.
   factory BreathingEntry.fromMap(Map<String, dynamic> map) {
     return BreathingEntry(
       id: map['id'] as int?,

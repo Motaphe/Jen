@@ -143,7 +143,9 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'Welcome back',
-                style: AppTextStyles.bodySecondary,
+                style: AppTextStyles.bodySecondary.copyWith(
+                  color: isDark ? AppColors.subtext0 : AppColors.latteSubtext0,
+                ),
               ),
               const SizedBox(height: 8),
               GestureDetector(
@@ -152,14 +154,16 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Text(
                       userName ?? 'Jen',
-                      style: AppTextStyles.heading1,
+                      style: AppTextStyles.heading1.copyWith(
+                        color: isDark ? AppColors.text : AppColors.latteText,
+                      ),
                     ),
                     if (userName != null) ...[
                       const SizedBox(width: 8),
-                      const Icon(
+                      Icon(
                         Icons.edit,
                         size: 20,
-                        color: AppColors.overlay1,
+                        color: isDark ? AppColors.overlay1 : AppColors.latteOverlay1,
                       ),
                     ],
                   ],
@@ -178,20 +182,7 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.auto_awesome,
                       color: AppColors.lavender,
                       onTap: () => onNavigate('affirmations'),
-                    ),
-                    _buildFeatureCard(
-                      title: 'Journal',
-                      subtitle: 'Your thoughts',
-                      icon: Icons.book,
-                      color: AppColors.blue,
-                      onTap: () => onNavigate('journal'),
-                    ),
-                    _buildFeatureCard(
-                      title: 'Mood Tracker',
-                      subtitle: 'Track emotions',
-                      icon: Icons.mood,
-                      color: AppColors.green,
-                      onTap: () => onNavigate('mood'),
+                      isDark: isDark,
                     ),
                     _buildFeatureCard(
                       title: 'Breathing',
@@ -199,6 +190,23 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.air,
                       color: AppColors.teal,
                       onTap: () => onNavigate('breathing'),
+                      isDark: isDark,
+                    ),
+                    _buildFeatureCard(
+                      title: 'Water',
+                      subtitle: 'Stay hydrated',
+                      icon: Icons.local_drink,
+                      color: AppColors.sky,
+                      onTap: () => onNavigate('water'),
+                      isDark: isDark,
+                    ),
+                    _buildFeatureCard(
+                      title: 'Calendar',
+                      subtitle: 'All activities',
+                      icon: Icons.calendar_today,
+                      color: AppColors.pink,
+                      onTap: () => onNavigate('calendar'),
+                      isDark: isDark,
                     ),
                   ],
                 ),
@@ -206,6 +214,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _buildLockdownCard(
                 onTap: () => onNavigate('lockdown'),
+                isDark: isDark,
               ),
               const SizedBox(height: 16),
             ],
@@ -221,13 +230,28 @@ class HomeScreen extends StatelessWidget {
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
+    required bool isDark,
   }) {
+    final cardBackground = isDark ? AppColors.surface0 : AppColors.latteSurface1;
+    final borderColor = isDark ? Colors.transparent : AppColors.latteSurface2;
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.18)
+        : AppColors.latteOverlay0.withValues(alpha: 0.22);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface0,
+          color: cardBackground,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor.withValues(alpha: isDark ? 0 : 0.9)),
+          boxShadow: [
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -238,7 +262,7 @@ class HomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
+                  color: color.withValues(alpha: isDark ? 0.25 : 0.4),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -250,12 +274,16 @@ class HomeScreen extends StatelessWidget {
               const Spacer(),
               Text(
                 title,
-                style: AppTextStyles.heading3,
+                style: AppTextStyles.heading3.copyWith(
+                  color: isDark ? AppColors.text : AppColors.latteText,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: AppTextStyles.caption,
+                style: AppTextStyles.caption.copyWith(
+                  color: isDark ? AppColors.subtext0 : AppColors.latteSubtext0,
+                ),
               ),
             ],
           ),
@@ -264,14 +292,28 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLockdownCard({required VoidCallback onTap}) {
+  Widget _buildLockdownCard({required VoidCallback onTap, required bool isDark}) {
+    final background = isDark ? AppColors.surface0 : AppColors.latteSurface1;
+    final borderColor = isDark ? Colors.transparent : AppColors.latteSurface2;
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.16)
+        : AppColors.latteOverlay0.withValues(alpha: 0.2);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 80,
         decoration: BoxDecoration(
-          color: AppColors.surface0,
+          color: background,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor.withValues(alpha: isDark ? 0 : 0.9)),
+          boxShadow: [
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -280,7 +322,7 @@ class HomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.mauve.withValues(alpha: 0.2),
+                  color: AppColors.mauve.withValues(alpha: isDark ? 0.25 : 0.35),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -297,19 +339,23 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Lockdown Mode',
-                      style: AppTextStyles.heading3,
+                      style: AppTextStyles.heading3.copyWith(
+                        color: isDark ? AppColors.text : AppColors.latteText,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Focus time without distractions',
-                      style: AppTextStyles.caption,
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark ? AppColors.subtext0 : AppColors.latteSubtext0,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
-                color: AppColors.overlay1,
+                color: isDark ? AppColors.overlay1 : AppColors.latteOverlay1,
                 size: 16,
               ),
             ],

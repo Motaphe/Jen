@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../constants/colors.dart';
+import '../constants/app_theme.dart';
 import '../constants/text_styles.dart';
 import '../models/mood_entry.dart';
 import '../services/database_helper.dart';
@@ -75,15 +76,22 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     final weekMoods = _getLastWeekMoods();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final backgroundColor = context.backgroundColor;
+    final surfaceColor = context.surfaceColor;
+    final surface1 = context.surface1Color;
+    final textColor = context.textColor;
+    final subtextColor = context.subtextColor;
 
     return Scaffold(
-      backgroundColor: AppColors.base,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.base,
+        backgroundColor: backgroundColor,
         elevation: 0,
         title: Text(
           'Mood Tracker',
-          style: AppTextStyles.heading3,
+          style: AppTextStyles.heading3.copyWith(color: textColor),
         ),
       ),
       body: SingleChildScrollView(
@@ -93,12 +101,12 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
           children: [
             Text(
               'How are you feeling today?',
-              style: AppTextStyles.heading2,
+              style: AppTextStyles.heading2.copyWith(color: textColor),
             ),
             const SizedBox(height: 8),
             Text(
               DateFormat('EEEE, MMMM d').format(selectedDate),
-              style: AppTextStyles.bodySecondary,
+              style: AppTextStyles.bodySecondary.copyWith(color: subtextColor),
             ),
             const SizedBox(height: 32),
             _buildMoodSelector(),
@@ -127,7 +135,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
             const SizedBox(height: 48),
             Text(
               'Your Week',
-              style: AppTextStyles.heading2,
+              style: AppTextStyles.heading2.copyWith(color: textColor),
             ),
             const SizedBox(height: 16),
             if (weekMoods.isEmpty)
@@ -136,7 +144,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                   padding: const EdgeInsets.all(32.0),
                   child: Text(
                     'No mood data yet.\nStart tracking to see your trends!',
-                    style: AppTextStyles.bodySecondary,
+                    style: AppTextStyles.bodySecondary.copyWith(color: subtextColor),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -146,10 +154,30 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                 height: 250,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface0,
+                  color: surfaceColor,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.transparent
+                        : surface1.withValues(alpha: 0.9),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.18)
+                          : AppColors.latteOverlay0.withValues(alpha: 0.16),
+                      blurRadius: 18,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
                 ),
-                child: _buildMoodChart(weekMoods),
+                child: _buildMoodChart(weekMoods,
+                    lineColor: AppColors.green,
+                    lineBackground: AppColors.green.withValues(alpha: 0.1),
+                    gridColor: surface1,
+                    labelColor: subtextColor,
+                    emojiColor: textColor,
+                    isDark: isDark),
               ),
           ],
         ),
@@ -172,6 +200,9 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
 
   Widget _buildMoodButton(int mood, String emoji, String label, Color color) {
     final isSelected = selectedMood == mood;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseSurface = context.surfaceColor;
+    final overlay = context.overlay1Color;
 
     return GestureDetector(
       onTap: () {
@@ -185,7 +216,9 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: isSelected ? color.withValues(alpha: 0.3) : AppColors.surface0,
+              color: isSelected
+                  ? color.withValues(alpha: isDark ? 0.35 : 0.25)
+                  : baseSurface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected ? color : Colors.transparent,
@@ -203,7 +236,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
           Text(
             label,
             style: AppTextStyles.caption.copyWith(
-              color: isSelected ? color : AppColors.overlay1,
+              color: isSelected ? color : overlay,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -212,7 +245,15 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
     );
   }
 
-  Widget _buildMoodChart(List<MoodEntry> moods) {
+  Widget _buildMoodChart(
+    List<MoodEntry> moods, {
+    required Color lineColor,
+    required Color lineBackground,
+    required Color gridColor,
+    required Color labelColor,
+    required Color emojiColor,
+    required bool isDark,
+  }) {
     if (moods.isEmpty) return const SizedBox();
 
     final spots = moods
@@ -220,6 +261,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
         .entries
         .map((e) => FlSpot(e.key.toDouble(), e.value.mood.toDouble()))
         .toList();
+    final background = context.backgroundColor;
 
     return LineChart(
       LineChartData(
@@ -229,7 +271,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
           horizontalInterval: 1,
           getDrawingHorizontalLine: (value) {
             return FlLine(
-              color: AppColors.surface1,
+              color: gridColor.withValues(alpha: isDark ? 0.5 : 0.35),
               strokeWidth: 1,
             );
           },
@@ -254,7 +296,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     DateFormat('E').format(date)[0],
-                    style: AppTextStyles.caption,
+                    style: AppTextStyles.caption.copyWith(color: labelColor),
                   ),
                 );
               },
@@ -267,10 +309,12 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
               reservedSize: 30,
               getTitlesWidget: (value, meta) {
                 const moodEmojis = ['', '😢', '😕', '😐', '🙂', '😄'];
-                if (value < 1 || value > 5) return const Text('');
+                if (value < 1 || value > 5) {
+                  return const SizedBox.shrink();
+                }
                 return Text(
                   moodEmojis[value.toInt()],
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16, color: emojiColor),
                 );
               },
             ),
@@ -285,7 +329,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: AppColors.green,
+            color: lineColor,
             barWidth: 3,
             isStrokeCapRound: true,
             dotData: FlDotData(
@@ -293,15 +337,15 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
               getDotPainter: (spot, percent, barData, index) {
                 return FlDotCirclePainter(
                   radius: 4,
-                  color: AppColors.green,
+                  color: lineColor,
                   strokeWidth: 2,
-                  strokeColor: AppColors.base,
+                  strokeColor: background,
                 );
               },
             ),
             belowBarData: BarAreaData(
               show: true,
-              color: AppColors.green.withValues(alpha: 0.1),
+              color: lineBackground,
             ),
           ),
         ],

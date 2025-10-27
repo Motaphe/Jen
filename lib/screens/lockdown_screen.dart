@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../services/database_helper.dart';
+import '../models/lockdown_entry.dart';
+import 'lockdown_history_screen.dart';
 
 class LockdownScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -17,39 +20,174 @@ class _LockdownScreenState extends State<LockdownScreen> {
   int _selectedMinutes = 15;
   int _remainingSeconds = 0;
   Timer? _timer;
+  String? _taskName;
+  DateTime? _startTime;
 
   final List<int> _timeOptions = [5, 15, 30, 60];
 
   void _toggleLockdown() {
     if (_isActive) {
-      _stopLockdown();
+      _showStopConfirmation();
     } else {
-      _startLockdown();
+      _showTaskNameDialog();
     }
   }
 
-  void _startLockdown() {
+  Future<void> _showTaskNameDialog() async {
+    final taskController = TextEditingController();
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'What are you focusing on?',
+          style: AppTextStyles.heading3,
+        ),
+        content: TextField(
+          controller: taskController,
+          autofocus: true,
+          style: const TextStyle(color: AppColors.text),
+          decoration: InputDecoration(
+            hintText: 'e.g., Study, Work, Meditate (optional)',
+            hintStyle: const TextStyle(color: AppColors.overlay0),
+            filled: true,
+            fillColor: AppColors.base,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          textCapitalization: TextCapitalization.sentences,
+          onSubmitted: (value) => Navigator.pop(context, value.trim()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, ''),
+            child: const Text(
+              'Skip',
+              style: TextStyle(color: AppColors.overlay1),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final task = taskController.text.trim();
+              Navigator.pop(context, task);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.mauve,
+              foregroundColor: AppColors.base,
+            ),
+            child: const Text('Start'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      _startLockdown(result.isEmpty ? null : result);
+    }
+  }
+
+  void _startLockdown(String? taskName) {
     setState(() {
       _isActive = true;
       _remainingSeconds = _selectedMinutes * 60;
+      _taskName = taskName;
+      _startTime = DateTime.now();
     });
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _remainingSeconds--;
         if (_remainingSeconds <= 0) {
-          _stopLockdown();
-          _showCompletionDialog();
+          _completeLockdown();
         }
       });
     });
   }
 
-  void _stopLockdown() {
+  Future<void> _completeLockdown() async {
     _timer?.cancel();
+
+    final entry = LockdownEntry(
+      startTime: _startTime!,
+      durationMinutes: _selectedMinutes,
+      completed: true,
+      taskName: _taskName,
+    );
+
+    await DatabaseHelper.instance.createLockdownEntry(entry);
+
     setState(() {
       _isActive = false;
       _remainingSeconds = 0;
+      _taskName = null;
+      _startTime = null;
+    });
+
+    if (mounted) {
+      _showCompletionDialog();
+    }
+  }
+
+  Future<void> _showStopConfirmation() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface0,
+        title: Text(
+          'End Early?',
+          style: AppTextStyles.heading3,
+        ),
+        content: Text(
+          'Are you sure you want to end this focus session early?',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Continue',
+              style: TextStyle(color: AppColors.green),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'End Session',
+              style: TextStyle(color: AppColors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      await _cancelLockdown();
+    }
+  }
+
+  Future<void> _cancelLockdown() async {
+    _timer?.cancel();
+
+    final entry = LockdownEntry(
+      startTime: _startTime!,
+      durationMinutes: _selectedMinutes,
+      completed: false,
+      taskName: _taskName,
+    );
+
+    await DatabaseHelper.instance.createLockdownEntry(entry);
+
+    setState(() {
+      _isActive = false;
+      _remainingSeconds = 0;
+      _taskName = null;
+      _startTime = null;
     });
   }
 
@@ -110,6 +248,22 @@ class _LockdownScreenState extends State<LockdownScreen> {
           'Lockdown Mode',
           style: AppTextStyles.heading3,
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history, color: AppColors.text),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LockdownHistoryScreen(
+                    onBack: () => Navigator.pop(context),
+                  ),
+                ),
+              );
+            },
+            tooltip: 'View History',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -130,6 +284,15 @@ class _LockdownScreenState extends State<LockdownScreen> {
                       'Focus Mode Active',
                       style: AppTextStyles.heading2,
                     ),
+                    if (_taskName != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _taskName!,
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.mauve,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Text(
                       _formatTime(_remainingSeconds),
@@ -168,7 +331,7 @@ class _LockdownScreenState extends State<LockdownScreen> {
                         children: [
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.info_outline,
                                 color: AppColors.mauve,
                                 size: 20,

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../services/database_helper.dart';
+import 'favorites_screen.dart';
 
 class AffirmationsScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -14,6 +17,7 @@ class AffirmationsScreen extends StatefulWidget {
 
 class _AffirmationsScreenState extends State<AffirmationsScreen> {
   int currentIndex = 0;
+  bool _isSaving = false;
 
   final List<String> affirmations = [
     "I am capable of achieving great things.",
@@ -26,6 +30,36 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
     "I am grateful for this moment.",
     "I have the power to create change.",
     "I am enough, just as I am.",
+    "Every breath I take fills me with peace.",
+    "I am growing and evolving each day.",
+    "My potential is limitless.",
+    "I choose to see the good in every situation.",
+    "I am in control of my thoughts and emotions.",
+    "I deserve rest and relaxation.",
+    "My inner peace is my superpower.",
+    "I am resilient and can handle challenges.",
+    "I radiate positive energy.",
+    "I am exactly where I need to be.",
+    "My past does not define my future.",
+    "I celebrate my progress, no matter how small.",
+    "I am surrounded by abundance.",
+    "I choose to focus on what I can control.",
+    "My mind is a garden; I choose what to plant.",
+    "I am patient with myself and my journey.",
+    "I trust the timing of my life.",
+    "I am worthy of my dreams and goals.",
+    "I release what no longer serves me.",
+    "I am creating the life I desire.",
+    "My mistakes are opportunities to learn.",
+    "I am confident in my abilities.",
+    "I choose joy and gratitude today.",
+    "I am at peace with who I am becoming.",
+    "My presence makes a difference.",
+    "I am open to new possibilities.",
+    "I trust myself to make good decisions.",
+    "I am deserving of compassion and kindness.",
+    "I find balance in all areas of my life.",
+    "I am the author of my own story.",
   ];
 
   void nextAffirmation() {
@@ -49,6 +83,23 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
           'Daily Affirmations',
           style: AppTextStyles.heading3,
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite, color: AppColors.red),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FavoritesScreen(
+                    onBack: () => Navigator.pop(context),
+                  ),
+                ),
+              );
+            },
+            tooltip: 'View Favorites',
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -73,8 +124,12 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                     const SizedBox(height: 32),
                     Text(
                       affirmations[currentIndex],
-                      style: AppTextStyles.heading2.copyWith(
-                        height: 1.4,
+                      style: GoogleFonts.merriweather(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.text,
+                        height: 1.5,
+                        fontStyle: FontStyle.italic,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -90,34 +145,52 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final messenger = ScaffoldMessenger.of(context);
-                      final db = DatabaseHelper.instance;
-                      await db.saveFavoriteAffirmation(
-                        affirmations[currentIndex],
-                      );
+                  AnimatedScale(
+                    scale: _isSaving ? 0.95 : 1.0,
+                    duration: const Duration(milliseconds: 100),
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        // Immediate haptic feedback
+                        HapticFeedback.mediumImpact();
 
-                      if (mounted) {
-                        messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Saved to favorites'),
-                            duration: Duration(seconds: 1),
-                          ),
+                        // Visual feedback
+                        setState(() {
+                          _isSaving = true;
+                        });
+
+                        final messenger = ScaffoldMessenger.of(context);
+                        final db = DatabaseHelper.instance;
+                        await db.saveFavoriteAffirmation(
+                          affirmations[currentIndex],
                         );
-                      }
-                    },
-                    icon: const Icon(Icons.favorite_border),
-                    label: const Text('Save'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.surface1,
-                      foregroundColor: AppColors.text,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+
+                        // Reset animation state
+                        setState(() {
+                          _isSaving = false;
+                        });
+
+                        if (mounted) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: const Text('Saved to favorites'),
+                              duration: const Duration(seconds: 1),
+                              backgroundColor: AppColors.green,
+                            ),
+                          );
+                        }
+                      },
+                      icon: Icon(_isSaving ? Icons.favorite : Icons.favorite_border),
+                      label: const Text('Save'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isSaving ? AppColors.green : AppColors.surface1,
+                        foregroundColor: _isSaving ? AppColors.base : AppColors.text,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),

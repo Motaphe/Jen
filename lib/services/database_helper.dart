@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/journal_entry.dart';
 import '../models/mood_entry.dart';
+import '../models/lockdown_entry.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -21,8 +22,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -55,6 +57,31 @@ class DatabaseHelper {
         saved_at TEXT NOT NULL
       )
     ''');
+
+    // Lockdown entries table
+    await db.execute('''
+      CREATE TABLE lockdown_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        start_time TEXT NOT NULL,
+        duration_minutes INTEGER NOT NULL,
+        completed INTEGER NOT NULL,
+        task_name TEXT
+      )
+    ''');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE lockdown_entries (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          start_time TEXT NOT NULL,
+          duration_minutes INTEGER NOT NULL,
+          completed INTEGER NOT NULL,
+          task_name TEXT
+        )
+      ''');
+    }
   }
 
   // Journal CRUD operations
@@ -129,13 +156,56 @@ class DatabaseHelper {
     });
   }
 
-  Future<List<String>> getFavoriteAffirmations() async {
+  Future<List<Map<String, dynamic>>> getFavoriteAffirmations() async {
     final db = await database;
     final result = await db.query(
       'favorite_affirmations',
       orderBy: 'saved_at DESC',
     );
-    return result.map((map) => map['text'] as String).toList();
+    return result;
+  }
+
+  Future<int> deleteFavoriteAffirmation(int id) async {
+    final db = await database;
+    return await db.delete(
+      'favorite_affirmations',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Lockdown entries operations
+  Future<int> createLockdownEntry(LockdownEntry entry) async {
+    final db = await database;
+    return await db.insert('lockdown_entries', entry.toMap());
+  }
+
+  Future<List<LockdownEntry>> getAllLockdownEntries() async {
+    final db = await database;
+    final result = await db.query(
+      'lockdown_entries',
+      orderBy: 'start_time DESC',
+    );
+    return result.map((map) => LockdownEntry.fromMap(map)).toList();
+  }
+
+  Future<Map<String, dynamic>> getLockdownStats() async {
+    final entries = await getAllLockdownEntries();
+
+    int totalSessions = entries.length;
+    int completedSessions = entries.where((e) => e.completed).length;
+    int totalFocusMinutes = entries
+        .where((e) => e.completed)
+        .fold(0, (sum, e) => sum + e.durationMinutes);
+    double completionRate =
+        totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
+
+    return {
+      'totalSessions': totalSessions,
+      'completedSessions': completedSessions,
+      'totalFocusMinutes': totalFocusMinutes,
+      'completionRate': completionRate,
+    };
   }
 
   Future<void> close() async {
